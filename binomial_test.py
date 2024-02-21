@@ -7,6 +7,7 @@ import numpy as np
 import os
 from draw_stats_helpers import *
 import argparse
+import sys
 
 
 np.set_printoptions(threshold=np.inf, linewidth=np.inf)
@@ -15,10 +16,15 @@ parser = argparse.ArgumentParser()
 parser.add_argument('--provider', type=str, help='AE, Asolvo, or Pseudodata')
 
 args = parser.parse_args()
+providers = ['AE', 'Asolvo', 'Pseudodata']
 provider = args.provider
 
+if provider not in providers: 
+    print("INVALID PROVIDER")
+    print("you can choose from:", providers)
+    sys.exit()
+
 filepath = 'Data/' + provider + '/'
-#filepath = 'Data/' + provider + '/Old_UECL_Algo/'
 
 for file in os.listdir(filepath):
     
@@ -81,7 +87,6 @@ for file in os.listdir(filepath):
             total = int(workingSum[i][j]) ## data sum is symmetric over the diagonal
 
             result = binomtest( nHome, total, p )
-            #result = binomtest( 50-1, 100, 0.5 )
             pvalues[i][j] = result.pvalue
             statistics[i][j] = result.statistic
             #print(i, j, nHome, nAway, total, result.pvalue, result.statistic, result.proportion_ci(confidence_level=0.95))
@@ -103,6 +108,7 @@ for file in os.listdir(filepath):
     counts, bins, _ = plt.hist(pvaluesNZ, bins=40, range=[0,0.1],  label='data')
     plt.axvline(cl, color='black')
     plt.text(0.02,0.90, "number < {}: {}\ntotal: {}".format(cl, np.sum(pvaluesNZ < 0.05), pvaluesNZ.size), transform=plt.gca().transAxes)
+    plt.text(0.02,0.70, "compare to 31 \n(5% of total number of pairings)", transform=plt.gca().transAxes, color='red')
     plt.ylim(0,9)
     plt.xlabel("pvalue")
     plt.ylabel("number of pairings")

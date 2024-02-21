@@ -78,11 +78,9 @@ for competition in competitions:
     ## this is cheating so that the plot looks better
     dataDiffZ = emptyBottomDiagonal(dataDiff)
     dataDiffFractionalZ = emptyBottomDiagonal(dataDiffFractional)
-    #dataSumAEZ = emptyBottomDiagonal(dataSum['AE'])
-    #dataSumASZ = emptyBottomDiagonal(dataSum['AS'])
-    dataSumAEZ = dataSum['AE']
-    dataSumASZ = dataSum['AS']
-    
+    dataSumAEZ = emptyBottomDiagonal(dataSum['AE'])
+    dataSumASZ = emptyBottomDiagonal(dataSum['AS'])
+
     names = list(clubs.keys())
 
     make2DTeamPlot(dataDiffZ, names, "abs(workingData[i, j]) > 400", savePath_main+"difference_per_matchup_2D.png", competition, cbarLabel="AE - AS", clim=[0,500])
@@ -127,7 +125,7 @@ for competition in competitions:
 
                 if i in big_country_indices.keys() and j in big_country_indices.keys():   ## only want big country - big country pairings                    
                     
-                    if big_country_indices[i] == big_country_indices[j] : continue ## if same country
+                    if big_country_indices[i] == big_country_indices[j] : continue ## same country
 
                     flag = bigCountryFillString( big_country_indices[i], big_country_indices[j], combinations)
                     country_comp[ flag ].append(dataDiffFractionalZ[i][j])
@@ -150,7 +148,7 @@ for competition in competitions:
         for country in big_countries:
             for combination in combinations:
                 if country in combination:
-                    plt.hist( country_comp[combination], label=combination, histtype='barstacked')
+                    plt.hist( country_comp[combination], label=combination, linewidth=2, alpha=0.6)
             plt.legend()
             plt.xlabel("percent difference (AE - Asolvo)/AE")
             plt.savefig(savePath_extra+"big_country_matchups_{}.png".format(country))

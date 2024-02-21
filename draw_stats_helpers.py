@@ -87,13 +87,15 @@ def fit_data(data, range, nbins=20):
 
     return counts, bins, params
 
-def plot(bins, params, savePath, xlineloc=-999, range=[], xlabel="", ymax=-999):
+def plot(bins, params, savePath, xlineloc=-999, range=[], xlabel="", ymax=-999, extratext = ""):
 
     x_values = np.linspace(min(bins), max(bins), 1000)
 
     plt.plot(x_values, gaussian(x_values, *params), color='red', linestyle='-', label='Fit')
     
     plt.text(0.02,0.90, "mean: {} \nsigma: {}".format(round(params[1], 6), round(params[2], 6)), transform=plt.gca().transAxes)
+    if extratext != "":
+        plt.text(0.02,0.70, extratext, transform=plt.gca().transAxes, color='red')
 
     if xlineloc != -999 : plt.axvline(x=xlineloc, color='black')
 

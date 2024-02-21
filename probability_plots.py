@@ -3,6 +3,7 @@ import os
 from matplotlib.transforms import Affine2D
 from draw_stats_helpers import *
 import argparse
+import sys
 
 np.set_printoptions(threshold=np.inf, linewidth=np.inf)
 
@@ -10,7 +11,13 @@ parser = argparse.ArgumentParser()
 parser.add_argument('--provider', type=str, help='AE, Asolvo, or Pseudodata. Default = AE', default='AE')
 
 args = parser.parse_args()
+providers = ['AE', 'Asolvo', 'Pseudodata']
 provider = args.provider
+
+if provider not in providers: 
+    print("INVALID PROVIDER")
+    print("you can choose from:", providers)
+    sys.exit()
 
 filepath = 'Data/' + provider + '/'
 
@@ -53,7 +60,7 @@ for file in os.listdir(filepath):
     dataNormH = splitDiagonalToList(dataNorm)
     counts, bins, params = fit_data(dataNormH , [0.43*normFactor,0.57*normFactor], 20)
     #plot(bins, params, savePath + "HA_norm_zoom.png") #plot w default range
-    plot(bins, params, savePath_main + "HA_prob_normalized.png", xlineloc=0.5*normFactor, range=[0.43*normFactor,0.57*normFactor], ymax=110)
+    plot(bins, params, savePath_main + "HA_prob_normalized.png", xlineloc=0.5*normFactor, range=[0.43*normFactor,0.57*normFactor], ymax=110, extratext= "COMPARE TO: \nmean: {} \nsigma: {}".format(50.,0.5))
     plt.clf()
 
     ## difference between home and away
