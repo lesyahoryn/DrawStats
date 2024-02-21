@@ -6,13 +6,20 @@ import pandas as pd
 import numpy as np
 import os
 from draw_stats_helpers import *
+import argparse
 
 
 np.set_printoptions(threshold=np.inf, linewidth=np.inf)
 
-provider = 'AE'
+parser = argparse.ArgumentParser()
+parser.add_argument('--provider', type=str, help='AE, Asolvo, or Barbara (pseudodata)')
+
+args = parser.parse_args()
+provider = args.provider
+
 filepath = 'Data/' + provider + '/'
-filepath = 'Data/' + provider + '/Old_UECL_Algo/'
+#filepath = 'Data/' + provider + '/Old_UECL_Algo/'
+
 for file in os.listdir(filepath):
     
     if '.csv' not in file: continue

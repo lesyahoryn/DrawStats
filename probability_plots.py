@@ -2,13 +2,18 @@ from scipy.stats import norm
 import os
 from matplotlib.transforms import Affine2D
 from draw_stats_helpers import *
-
+import argparse
 
 np.set_printoptions(threshold=np.inf, linewidth=np.inf)
 
-provider = 'AE'
-#filepath = 'Data/' + provider + '/Old_UECL_Algo/'
+parser = argparse.ArgumentParser()
+parser.add_argument('--provider', type=str, help='AE, Asolvo, or Barbara (pseudodata). Default = AE', default='AE')
+
+args = parser.parse_args()
+provider = args.provider
+
 filepath = 'Data/' + provider + '/'
+
 for file in os.listdir(filepath):
     if '.csv' not in file: continue
 
@@ -87,10 +92,6 @@ for file in os.listdir(filepath):
 
             potA = clubs[teamA]['pot']
             idxA = clubList.index(teamA)
-            
-            print()
-            print(teamH, potH, idxH)
-            print(teamA, potA, idxA)
 
             if not np.isnan(dataNorm[idxH][idxA]):
                 prob_pot_v_pot[potH][potA].append( dataNorm[idxH][idxA] )
@@ -119,9 +120,6 @@ for file in os.listdir(filepath):
         trans[5] = Affine2D().translate(0.1, 0.0) + ax.transData
         trans[6] = Affine2D().translate(0.2, 0.0) + ax.transData
     for potH in range( 1, npots+1 ):
-        #print( pots_indices.keys() )
-        #print( mean_pot_v_pot[potH] )
-        #print( stdv_pot_v_pot[potH] )
         ax.errorbar( range( 1, npots+1 ), mean_pot_v_pot[potH], yerr=stdv_pot_v_pot[potH], 
                     marker='o', linestyle='none', label='Pot {}'.format(potH), transform=trans[potH])
 
