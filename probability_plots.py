@@ -7,7 +7,7 @@ import argparse
 np.set_printoptions(threshold=np.inf, linewidth=np.inf)
 
 parser = argparse.ArgumentParser()
-parser.add_argument('--provider', type=str, help='AE, Asolvo, or Barbara (pseudodata). Default = AE', default='AE')
+parser.add_argument('--provider', type=str, help='AE, Asolvo, or Pseudodata. Default = AE', default='AE')
 
 args = parser.parse_args()
 provider = args.provider
@@ -25,12 +25,16 @@ for file in os.listdir(filepath):
 
     inpName = filepath + file
     saveName = inpName.split("/")[-1].strip(".csv")
-    savePath = 'plots/' + provider + "/" + saveName + "/"
+    savePath_main = 'plots/HomeAway/{}/{}/'.format(provider, saveName)
+    savePath_extra = 'plots/HomeAway/{}/{}/extra/'.format(provider, saveName)
+    #savePath = 'plots/' + provider + "_oldalgo/" + saveName + "/"
 
-    if not os.path.exists(savePath):
-        os.makedirs(savePath)
+    if not os.path.exists(savePath_main):
+        os.makedirs(savePath_main)
+    if not os.path.exists(savePath_extra):
+        os.makedirs(savePath_extra)
 
-    data = getData(inpName, provider == 'Barbara' )
+    data = getData(inpName, provider == 'Pseudodata' )
  
     dataT = data.T
     dataSum = data + dataT
@@ -40,33 +44,32 @@ for file in os.listdir(filepath):
     dataNorm = data / dataSum * normFactor
     dataTNorm = dataT / dataSum * normFactor
 
-
-    ## do some basic plotting, just see spread of values and fit histogram
-
     #############
-    # plot and fit normalized distribution
+    # basic plotting of population
     #############
+
+    ## normalized distribution
     print("normalized")
     dataNormH = splitDiagonalToList(dataNorm)
     counts, bins, params = fit_data(dataNormH , [0.43*normFactor,0.57*normFactor], 20)
     #plot(bins, params, savePath + "HA_norm_zoom.png") #plot w default range
-    plot(bins, params, savePath + "HA_norm.png", xlineloc=0.5*normFactor, range=[0.43*normFactor,0.57*normFactor], ymax=110)
+    plot(bins, params, savePath_main + "HA_prob_normalized.png", xlineloc=0.5*normFactor, range=[0.43*normFactor,0.57*normFactor], ymax=110)
     plt.clf()
 
-    ###########
-    # plot and fit difference between home and away
-    ###########
+    ## difference between home and away
     dataDiff = dataNorm - dataTNorm
 
     print("diff")
     dataDiffH = splitDiagonalToList(dataDiff)
     counts, bins, params = fit_data(dataDiffH , [-0.2*normFactor,0.2*normFactor], 20)
     #plot(bins, params, savePath + "HA_diff_zoom.png")
-    plot(bins, params, savePath + "HA_diff.png", xlineloc=0.0*normFactor, range=[-0.2*normFactor,0.2*normFactor])
+    plot(bins, params, savePath_extra + "HA_difference.png", xlineloc=0.0*normFactor, range=[-0.2*normFactor,0.2*normFactor])
     plt.clf()
 
+    #############
+    # separate above into curve per pot - also summary plots per pot
+    #############
 
-    ##Separate above curves into one per pot
     ## i want to know the probability of pot 1 playing at home vs pot1, pot2, pot3, pot4
     prob_pot_v_pot = {}
     mean_pot_v_pot = {}
@@ -106,7 +109,7 @@ for file in os.listdir(filepath):
 
         plt.xlabel("times pot {} plays at home".format(potH))
         plt.legend()
-        plt.savefig(savePath + "prob_pot{}.png".format(potH))
+        plt.savefig(savePath_extra + "probability_for_pot{}.png".format(potH))
         plt.clf()
 
     ## summary plot -- mostly some python magic to make the dots not on top of each other
@@ -126,7 +129,7 @@ for file in os.listdir(filepath):
     plt.xlabel("Away pot")
     plt.ylabel("probability at home")
     plt.legend(bbox_to_anchor=(0,1.02,1,0.2), loc='lower left', mode='expand',ncol=len(range( 1, npots+1 )), title='home pot')
-    plt.savefig(savePath + 'summary_prob_pots.png')
+    plt.savefig(savePath_extra + 'summary_probability_per_pot.png')
     plt.clf()
 
     plt.close()

@@ -1,0 +1,5 @@
+Data/
+plots/
+metadata/
+*.pptx
+__pycache__/

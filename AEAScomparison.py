@@ -17,13 +17,14 @@ np.set_printoptions(threshold=np.inf, linewidth=np.inf)
 for competition in competitions:
     clubs = set_club_countries_pots(competition)
 
-    outDir = 'plots/matchupComparison/' + competition + "/"
-    #outDir = 'plots/matchupComparison/AEoldvAENew_' + competition + "/"
-    #outDir = 'plots/matchupComparison/ASvAENew_' + competition + "/"
-    #outDir = 'plots/matchupComparison/ASvAEold_' + competition + "/"
+    savePath_main = 'plots/matchupComparison/{}/'.format(competition)
+    savePath_extra = 'plots/matchupComparison/{}/extra/'.format(competition)
 
-    if not os.path.exists(outDir):
-        os.makedirs(outDir)
+    if not os.path.exists(savePath_main):
+        os.makedirs(savePath_main)
+    if not os.path.exists(savePath_extra):
+        os.makedirs(savePath_extra)
+
 
     data["AE"] = getData(dataPath+"AE/"+competition+"-50k.csv")
     #data["AE"] = getData(dataPath+"AE/Old_UECL_algo/"+competition+"-50k.csv")
@@ -52,7 +53,7 @@ for competition in competitions:
     ax2.set_ylabel('ratio AE/Asolvo')
     ax2.set_xlabel('number of matchups per pairing')
     ax2.axhline(1, color='black', linestyle='--')
-    plt.savefig(outDir+"all_matchups.png")
+    plt.savefig(savePath_extra+"matchups_per_pairing.png")
     plt.close()
 
     
@@ -61,14 +62,14 @@ for competition in competitions:
     dataDiffSplit = splitDiagonalToList(dataDiff)
     plt.hist(dataDiffSplit, bins=30)
     plt.xlabel("difference in # matchups: AE - AS")
-    plt.savefig(outDir + "diff.png")
+    plt.savefig(savePath_extra + "raw_difference.png")
     plt.clf()
 
     ## percent difference
     dataDiffFractional = dataDiff.astype(np.float64) / dataSum["AE"].astype(np.float64) * 100
     dataDiffFSplit = splitDiagonalToList(dataDiffFractional)
     counts, bins, params = fit_data(dataDiffFSplit , [-5, 5], 30)
-    plot(bins, params, outDir + "diffFraction.png", xlineloc=0., range=[-5, 5], xlabel="percent difference in # matchups: (AE - AS)/AE", ymax=80)
+    plot(bins, params, savePath_main + "percent_difference.png", xlineloc=0., range=[-5, 5], xlabel="percent difference in # matchups: (AE - AS)/AE", ymax=80)
     #plot(bins, params, outDir + "diffFraction.png", xlineloc=0., range=[-5, 5], xlabel="percent difference in # matchups: (AE new - AE old)/AE new", ymax=80)
     plt.clf()
 
@@ -84,13 +85,13 @@ for competition in competitions:
     
     names = list(clubs.keys())
 
-    make2DTeamPlot(dataDiffZ, names, "abs(workingData[i, j]) > 400", outDir+"diff-2d.png", cbarLabel="AE - AS", clim=[0,500])
+    make2DTeamPlot(dataDiffZ, names, "abs(workingData[i, j]) > 400", savePath_main+"difference_per_matchup_2D.png", competition, cbarLabel="AE - AS", clim=[0,500])
     plt.close()
 
-    make2DTeamPlot(dataSumAEZ, names, "False", outDir+"allData_AE.png", cbarLabel="number of matchups", clim=[np.min( dataSumAEZ[dataSumAEZ !=0] ) , np.max(dataSumAEZ)], fontsize=8)
+    make2DTeamPlot(dataSumAEZ, names, "False", savePath_extra+"allData_AE.png", competition, cbarLabel="number of matchups", clim=[np.min( dataSumAEZ[dataSumAEZ !=0] ) , np.max(dataSumAEZ)], fontsize=8)
     plt.close()
 
-    make2DTeamPlot(dataSumASZ, names, "False", outDir+"allData_AS.png", cbarLabel="number of matchups", clim=[np.min( dataSumAEZ[dataSumASZ !=0] ) , np.max(dataSumASZ)], fontsize=8)
+    make2DTeamPlot(dataSumASZ, names, "False", savePath_extra+"allData_Asolvo.png", competition, cbarLabel="number of matchups", clim=[np.min( dataSumAEZ[dataSumASZ !=0] ) , np.max(dataSumASZ)], fontsize=8)
     plt.close()
     
 
@@ -142,7 +143,7 @@ for competition in competitions:
         plt.ylabel( "percent difference (AE - Asolvo)/AE" )
         plt.xticks(rotation=45)
         plt.tight_layout()
-        plt.savefig(outDir+"bigCountryComp.png")
+        plt.savefig(savePath_extra+"big_country_matchups.png")
         plt.clf()
 
         ## lets just plot them all on top of each other, yolo
@@ -152,7 +153,7 @@ for competition in competitions:
                     plt.hist( country_comp[combination], label=combination, histtype='barstacked')
             plt.legend()
             plt.xlabel("percent difference (AE - Asolvo)/AE")
-            plt.savefig(outDir+"bigCountryComp_{}.png".format(country))
+            plt.savefig(savePath_extra+"big_country_matchups_{}.png".format(country))
             plt.clf()
 
 

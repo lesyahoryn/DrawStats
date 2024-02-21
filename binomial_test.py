@@ -12,7 +12,7 @@ import argparse
 np.set_printoptions(threshold=np.inf, linewidth=np.inf)
 
 parser = argparse.ArgumentParser()
-parser.add_argument('--provider', type=str, help='AE, Asolvo, or Barbara (pseudodata)')
+parser.add_argument('--provider', type=str, help='AE, Asolvo, or Pseudodata')
 
 args = parser.parse_args()
 provider = args.provider
@@ -33,29 +33,33 @@ for file in os.listdir(filepath):
     ##set up input/output paths
     inpName = filepath + file
     saveName = inpName.split("/")[-1].strip(".csv")
-    savePath = 'plots/' + provider + "/" + saveName + "/"
+    savePath_main = 'plots/HomeAway/{}/{}/'.format(provider, saveName)
+    savePath_extra = 'plots/HomeAway/{}/{}/extra/'.format(provider, saveName)
     #savePath = 'plots/' + provider + "_oldalgo/" + saveName + "/"
 
-    if not os.path.exists(savePath):
-        os.makedirs(savePath)
+    if not os.path.exists(savePath_main):
+        os.makedirs(savePath_main)
+    if not os.path.exists(savePath_extra):
+        os.makedirs(savePath_extra)
 
-    data = getData(inpName, provider == 'Barbara' )
+    data = getData(inpName, provider == 'Pseudodata' )
 
     dataT = data.T
     dataSum = data + dataT
-    # indexLabels = df["Unnamed: 0"]
-    # columnLabels = df.columns
-    # print(columnLabels)
+
     indexLabels=list(clubs.keys())
 
     ## normalize data and dataT to parallelize the two probabilities
     normFactor = 1
     dataNorm = np.round(data / dataSum * normFactor)
     dataTNorm = np.round(dataT / dataSum * normFactor)
-    dataNormSum = dataNorm + dataTNorm 
+    dataNormSum = dataNorm + dataTNorm  
 
-    ## get p values of binomal test
-    ## one test per pairing 
+    
+    #############
+    # perform binomial test per pairing
+    #    -- one result per pairing
+    #############
 
     #output data structure
     workingData = data
@@ -90,7 +94,7 @@ for file in os.listdir(filepath):
     #plt.xscale('log')
     plt.xlabel("pvalue")
     plt.ylabel("number of pairings")
-    plt.savefig(savePath+"pvalues.png")
+    plt.savefig(savePath_extra+"pvalues_0to1.png")
     plt.clf()
 
     print("sum with < {} {}, out of {}".format(cl, np.sum(pvaluesNZ < 0.05), pvaluesNZ.size))
@@ -102,13 +106,13 @@ for file in os.listdir(filepath):
     plt.ylim(0,9)
     plt.xlabel("pvalue")
     plt.ylabel("number of pairings")
-    plt.savefig(savePath+"pvalues_zoom.png")
+    plt.savefig(savePath_main+"pvalues_0to0p1.png")
     plt.clf()
     
     statisticsNZ = statistics[statistics != 0]
     counts, bins, _ = plt.hist(statisticsNZ, bins=30, label='data')
     plt.axvline(0.5, color='black')
-    plt.savefig(savePath+"statistics.png")
+    plt.savefig(savePath_extra+"estimated_statistic.png")
     plt.clf()
 
     ##count low p values per pot, and sum p values per team  
@@ -135,27 +139,24 @@ for file in os.listdir(filepath):
                     low_pvalues_perteam[i] += 1
                     low_pvalues_perteam[j] += 1
 
-    #pvalues_perpot[pot] = elements_w_index
-
     ## plot p values per team 
     plt.barh(indexLabels, pvalues_perteam)
     plt.subplots_adjust(left=0.3, right=0.9, top=0.9, bottom=0.1)
     plt.yticks(np.arange(0,len(indexLabels),1), labels=indexLabels, fontsize=9)
     plt.xlabel("sum of p values per team")
-    plt.savefig(savePath+"pvalues-perteam.png")
+    plt.savefig(savePath_extra+"pvalues_perteam.png")
     plt.clf()
 
     plt.barh(indexLabels, low_pvalues_perteam)
     plt.subplots_adjust(left=0.3, right=0.9, top=0.9, bottom=0.1)
     plt.yticks(np.arange(0,len(indexLabels),1), labels=indexLabels, fontsize=9)
     plt.xlabel("number of p-value < 0.05 per team")
-    plt.savefig(savePath+"pvalues-nlow-perteam.png")
+    plt.savefig(savePath_extra+"n_low_pvalues_per_team.png")
     plt.close()
 
 
     ## do 2d array of p values per matchup
-
-    make2DTeamPlot(pvalues, indexLabels, "workingData[i, j] < 0.05", savePath+"pvalues-2d.png", competition, redTxtPrec='0.2f', cbarLabel="p value")
+    make2DTeamPlot(pvalues, indexLabels, "workingData[i, j] < 0.05", savePath_extra+"pvalue_per_matchup_2D.png", competition, redTxtPrec='0.2f', cbarLabel="p value")
     plt.close()
 
 
