@@ -7,47 +7,31 @@ from draw_stats_helpers import *
 np.set_printoptions(threshold=np.inf, linewidth=np.inf)
 
 provider = 'AE'
+#filepath = 'Data/' + provider + '/Old_UECL_Algo/'
 filepath = 'Data/' + provider + '/'
 for file in os.listdir(filepath):
     if '.csv' not in file: continue
 
-
-    inpName = filepath + file
-    saveName = inpName.split("/")[-1].strip(".csv")
-    savePath = 'plots/' + provider + "/" + saveName + "/"
-    
-    print(inpName)
-    #if "Ba5000Sim050" not in inpName: continue
-
-    if not os.path.exists(savePath):
-        os.makedirs(savePath)
-
-    #get info from competition, assume competition is what's before first - in name 
     competition = file.strip(".csv").split("-")[0]
     if competition not in ['UCL', 'UEL', 'UECL']: #one of the pseudodata samples
         competition = "UECL"
 
-    print(file, competition)
+    clubs = set_club_countries_pots(competition)
 
-    clubs, pots_indices = get_clubs_pots_indices(competition)
+    inpName = filepath + file
+    saveName = inpName.split("/")[-1].strip(".csv")
+    savePath = 'plots/' + provider + "/" + saveName + "/"
 
-    ## import data and set up matrices, transpose used for adding/subtracting across the diagonal
-    #from excel with labels
-    if provider == 'Barbara': #no team names in spreadsheet, and extra empty column at the end
-        data = np.genfromtxt(inpName, delimiter=',')
-        data = data[:, ~np.isnan(data).any(axis=0)]
-    
-    else: #it's from an excel sheet with the names
-        df = pd.read_csv(inpName)
-        data = df.iloc[:, 1:].values
+    if not os.path.exists(savePath):
+        os.makedirs(savePath)
 
+    data = getData(inpName, provider == 'Barbara' )
+ 
     dataT = data.T
     dataSum = data + dataT
 
     ## normalize data and dataT to parallelize the two probabilities
     normFactor = 100
-    print(data)
-    print(dataSum)
     dataNorm = data / dataSum * normFactor
     dataTNorm = dataT / dataSum * normFactor
 
@@ -61,7 +45,7 @@ for file in os.listdir(filepath):
     dataNormH = splitDiagonalToList(dataNorm)
     counts, bins, params = fit_data(dataNormH , [0.43*normFactor,0.57*normFactor], 20)
     #plot(bins, params, savePath + "HA_norm_zoom.png") #plot w default range
-    plot(bins, params, savePath + "HA_norm.png", xlineloc=0.5*normFactor, range=[0.43*normFactor,0.57*normFactor])
+    plot(bins, params, savePath + "HA_norm.png", xlineloc=0.5*normFactor, range=[0.43*normFactor,0.57*normFactor], ymax=110)
     plt.clf()
 
     ###########
@@ -83,57 +67,67 @@ for file in os.listdir(filepath):
     mean_pot_v_pot = {}
     stdv_pot_v_pot = {}
     nRows, nCols = dataNorm.shape
-    for potH in pots_indices:
+
+    npots, nteamsperpot = getNPots_TeamsPerPot(competition)
+
+    ## set up data structures to save the data per pot 
+    for potH in range( 1, npots+1 ):
         prob_pot_v_pot[potH] = {}
         mean_pot_v_pot[potH] = []
         stdv_pot_v_pot[potH] = []
-        for potA in pots_indices:
+        for potA in range( 1, npots+1 ):
             prob_pot_v_pot[potH][potA] = []
-    
-    for potH in pots_indices:
-        for idxH in pots_indices[potH]:
-            for potA in pots_indices:
-                for idxA in pots_indices[potA]:
-                    if not np.isnan(dataNorm[idxH][idxA]):
-                        prob_pot_v_pot[potH][potA].append( dataNorm[idxH][idxA] )
 
-    for potH in pots_indices:
-        for potA in pots_indices:
-           # print()
-            #print( prob_pot_v_pot[potH] )
-            #print( np.mean(prob_pot_v_pot[potH][potA]) )
+    # for each team to play each other team, but smeared into pots
+    clubList = list(clubs.keys())
+    for teamH in clubs:
+        for teamA in clubs:
+            potH = clubs[teamH]['pot']
+            idxH = clubList.index(teamH)
+
+            potA = clubs[teamA]['pot']
+            idxA = clubList.index(teamA)
+            
+            print()
+            print(teamH, potH, idxH)
+            print(teamA, potA, idxA)
+
+            if not np.isnan(dataNorm[idxH][idxA]):
+                prob_pot_v_pot[potH][potA].append( dataNorm[idxH][idxA] )
+
+    ## make one plot for each home plot and make the data list for the summary plot
+    for potH in range( 1, npots+1 ):
+        for potA in range( 1, npots+1 ):
             mean_pot_v_pot[potH].append( np.mean(prob_pot_v_pot[potH][potA]) )
             stdv_pot_v_pot[potH].append( np.nanstd(prob_pot_v_pot[potH][potA]) )
-            #print(mean_pot_v_pot)
-            #print(stdv_pot_v_pot)
+
             plt.hist( prob_pot_v_pot[potH][potA], label="vs pot {}".format(potA), histtype="step", range=[0.43*normFactor,0.57*normFactor], bins=30)
+
         plt.xlabel("times pot {} plays at home".format(potH))
         plt.legend()
         plt.savefig(savePath + "prob_pot{}.png".format(potH))
         plt.clf()
 
-    #print(mean_pot_v_pot)
-    #print(stdv_pot_v_pot)
-
+    ## summary plot -- mostly some python magic to make the dots not on top of each other
     trans = {}
     fig, ax = plt.subplots()
-    trans[1] = Affine2D().translate(-0.2, 0.0) + ax.transData
-    trans[2] = Affine2D().translate(-0.1, 0.0) + ax.transData
-    trans[3] = Affine2D().translate(+0.1, 0.0) + ax.transData
-    trans[4] = Affine2D().translate(+0.2, 0.0) + ax.transData
+    trans[1] = Affine2D().translate(-0.3, 0.0) + ax.transData
+    trans[2] = Affine2D().translate(-0.2, 0.0) + ax.transData
+    trans[3] = Affine2D().translate(-0.1, 0.0) + ax.transData
+    trans[4] = Affine2D().translate(0.0, 0.0) + ax.transData
     if competition == "UECL":
-        trans[5] = Affine2D().translate(-0.3, 0.0) + ax.transData
-        trans[6] = Affine2D().translate(+0.3, 0.0) + ax.transData
-    for potH in pots_indices:
+        trans[5] = Affine2D().translate(0.1, 0.0) + ax.transData
+        trans[6] = Affine2D().translate(0.2, 0.0) + ax.transData
+    for potH in range( 1, npots+1 ):
         #print( pots_indices.keys() )
         #print( mean_pot_v_pot[potH] )
         #print( stdv_pot_v_pot[potH] )
-        ax.errorbar( pots_indices.keys(), mean_pot_v_pot[potH], yerr=stdv_pot_v_pot[potH], 
+        ax.errorbar( range( 1, npots+1 ), mean_pot_v_pot[potH], yerr=stdv_pot_v_pot[potH], 
                     marker='o', linestyle='none', label='Pot {}'.format(potH), transform=trans[potH])
 
     plt.xlabel("Away pot")
     plt.ylabel("probability at home")
-    plt.legend(bbox_to_anchor=(0,1.02,1,0.2), loc='lower left', mode='expand',ncol=len(pots_indices), title='home pot')
+    plt.legend(bbox_to_anchor=(0,1.02,1,0.2), loc='lower left', mode='expand',ncol=len(range( 1, npots+1 )), title='home pot')
     plt.savefig(savePath + 'summary_prob_pots.png')
     plt.clf()
 
