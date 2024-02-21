@@ -8,12 +8,12 @@ The main plots include important indicators, as well as the values they should b
 The first set of scripts studies if the home/away assignment is consistent with a fair draw. 
 
 ### probability_plots.py
-Usage: `python probability_plots.py --provider [AE, Asolvo, or Barbara]` 
+Usage: `python probability_plots.py --provider [AE, Asolvo, or Pseudodata]` 
 Main output: 
   * `HA_prob_normalized.png` which shows the number of times team A plays at home, normalized to 100. 
 
 ### binomial_test.py
-Usage: `python probability_plots.py --provider [AE, Asolvo, or Barbara]` 
+Usage: `python probability_plots.py --provider [AE, Asolvo, or Pseudodata]` 
 Main output: 
   * `pvalues_0to0p1.png` which shows us the number of pairings with pvalue from the binomial test less than 0.05. We expect this number to be about 5% of the total number of pairings.
 
