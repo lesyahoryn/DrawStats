@@ -4,6 +4,8 @@ A collection of scripts that do some analysis and make some plots showing the re
 From each script, the output plots go into the folder `plots`. The main plots will stay in the appropriate top level folder, and other plots you might find helpful go into `extras`
 The main plots include important indicators, as well as the values they should be compared to.
 
+All scripts process data from all three competitions by default
+
 ## Home/Away Analysis
 The first set of scripts studies if the home/away assignment is consistent with a fair draw. 
 
@@ -24,3 +26,9 @@ Usage `python ASAEcomparison.py`
 Main output:
   *  `percent_difference.png` shows the percent difference between AE and Asolvo dataset per pairing
   *  `difference_per_matchup_2D.png` shows the absolute difference between AE and Asolvo per pairing. Any large differences are highlighted with red text
+
+### compute_probabilities.py
+Usage `python compute_probabilities.py `
+Main output:
+  *  `percent_difference_prob-AE.png` and `percent_difference_prob-AS.png` show the percent difference between draw results and computed probability on the population of team pairings.
+  * `2D_percent_difference_prob-AE.png` and `2D_percent_difference_prob-AS.png` shows the percent difference between draw results and computed probability per team pairing.
