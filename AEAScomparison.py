@@ -81,12 +81,15 @@ for competition in competitions:
     dataSumAEZ = emptyBottomDiagonal(dataSum['AE'])
     dataSumASZ = emptyBottomDiagonal(dataSum['AS'])
 
+    # dataSumAEZ = dataSum['AE']
+    # dataSumASZ = dataSum['AS']
+
     names = list(clubs.keys())
 
     make2DTeamPlot(dataDiffZ, names, "abs(workingData[i, j]) > 400", savePath_main+"difference_per_matchup_2D.png", competition, cbarLabel="AE - AS", clim=[0,500])
     plt.close()
 
-    make2DTeamPlot(dataSumAEZ, names, "False", savePath_extra+"allData_AE.png", competition, cbarLabel="number of matchups", clim=[np.min( dataSumAEZ[dataSumAEZ !=0] ) , np.max(dataSumAEZ)], fontsize=8)
+    make2DTeamPlot(dataSumAEZ, names, "False", savePath_extra+"allData_AE.png", competition, cbarLabel="number of matchups", clim=[np.min( dataSumAEZ[dataSumAEZ !=0] ) , np.max(dataSumAEZ)], fontsize=7)
     plt.close()
 
     make2DTeamPlot(dataSumASZ, names, "False", savePath_extra+"allData_Asolvo.png", competition, cbarLabel="number of matchups", clim=[np.min( dataSumAEZ[dataSumASZ !=0] ) , np.max(dataSumASZ)], fontsize=8)
@@ -155,4 +158,4 @@ for competition in competitions:
             plt.clf()
 
 
-
+plt.close()

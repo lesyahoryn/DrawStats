@@ -67,8 +67,27 @@ def emptyBottomDiagonal(data):
     for i in range(data.shape[0]):
         for j in range(data.shape[1]):
             if i >= j: continue
-            dataZ[i][j] = data[i][j]
+            
+            if np.isnan( data[i][j] ): dataZ[i][j] = 0
+            else: dataZ[i][j] = data[i][j]
+    
     return dataZ
+
+
+def splitDiagonalToList(data):
+    nRows, nCols = data.shape
+    output = []
+    
+    for i in range(nRows):
+        for j in range(nCols):
+            if i >= j: continue #only work with cells above diagonal, also skip diagonal bc who cares
+            if np.isnan( data[i][j] ) and np.isnan( data[j][i] ): continue #skip pairings that are illegal
+            if data[i][j] == 0 and data[j][i] == 0 : continue #skip pairings that are illegal
+
+            output.append(data[i][j])
+
+    return output
+
 
 ##############
 ## Plot and fit helpers
@@ -108,19 +127,6 @@ def plot(bins, params, savePath, xlineloc=-999, range=[], xlabel="", ymax=-999, 
     print("mean", params[1])
     print("sigma", params[2])
 
-def splitDiagonalToList(data):
-    nRows, nCols = data.shape
-    output = []
-    
-    for i in range(nRows):
-        for j in range(nCols):
-            if i >= j: continue #only work with cells above diagonal, also skip diagonal bc who cares
-            if np.isnan( data[i][j] ) and np.isnan( data[j][i] ): continue #skip pairings that are illegal
-            if data[i][j] == 0 and data[j][i] == 0 : continue #skip pairings that are illegal
-
-            output.append(data[i][j])
-
-    return output
 
 
 def make2DTeamPlot(workingData, names, redTxtCondition, outPath, competition, redTxtPrec='.0f', cbarLabel="", clim=[], fontsize=12):
