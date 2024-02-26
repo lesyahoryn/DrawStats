@@ -6,53 +6,16 @@ import matplotlib.pyplot as plt
 from scipy.optimize import curve_fit 
 
 
+##set some common stuff
+def init():
+    np.set_printoptions(threshold=np.inf, linewidth=np.inf)
+    np.seterr(divide='ignore', invalid='ignore')
 
-###### 
-## data organization
-#######
-def set_club_countries_pots(competition):
-    metadataDir = './metadata/'
+##################
+## Some data formatting helpers
+##################
     
-    clubs = OrderedDict()
-
-    with open(metadataDir + competition+'.csv', newline='') as csvfile:
-        reader = csv.reader(csvfile)
-
-        for row in reader:
-            if row[0] == "Team": continue ## skip header row
-
-            club = row[0]
-            country = row[1]
-            pot = row[2]
-
-            clubs[club] = { 'country': country, 'pot': int(pot) }
-    return clubs
-
-def getNPots_TeamsPerPot(competition):
-    ## UCL and UEL
-    npots = 4
-    nteamsperpot = 9
-
-    if competition == "UECL": 
-        npots = 6
-        nteamsperpot = 6 
-
-    return npots, nteamsperpot
-       
-def getData(inpName, isPseudodata=False):
-    ## import data and set up matrices, transpose used for adding/subtracting across the diagonal
-    #from excel with labels
-    if isPseudodata: #no team names in spreadsheet, and extra empty column at the end
-        data = np.genfromtxt(inpName, delimiter=',')
-        data = data[:, ~np.isnan(data).any(axis=0)]
-    
-    else: #it's from an excel sheet with the names
-        df = pd.read_csv(inpName)
-        data = df.iloc[:, 1:].values
-
-    return data
-
-
+## get string that corresponds to big country pairing
 def bigCountryFillString( country1, country2, combinations):
     for combination in combinations:
         if country1 in combination and country2 in combination: 
@@ -61,7 +24,7 @@ def bigCountryFillString( country1, country2, combinations):
     print("INVALID COMBINATION", country1, country2)
     return ""
 
-## silly little cheating to make the 2d plots look better
+## silly little cheating to make the 2d plots look better by removing the data from below the diagonal
 def emptyBottomDiagonal(data):
     dataZ = np.zeros((data.shape[0], data.shape[1]))
     for i in range(data.shape[0]):
@@ -73,7 +36,7 @@ def emptyBottomDiagonal(data):
     
     return dataZ
 
-
+## take only top half of the diagonal and make a list to dump into plt.hist()
 def splitDiagonalToList(data):
     nRows, nCols = data.shape
     output = []

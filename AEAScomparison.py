@@ -2,44 +2,53 @@ from draw_stats_helpers import *
 import matplotlib.pyplot as plt
 import os
 from matplotlib.transforms import Affine2D
+import argparse
+from DataHandler import * 
 
 competitions = ['UCL', 'UECL', 'UEL']
 
-clubs = {}
-
 dataPath = 'Data/'
 
-data = {}
-dataSum = {}
+init()
 
-np.set_printoptions(threshold=np.inf, linewidth=np.inf)
+parser = argparse.ArgumentParser()
+parser.add_argument('--test100', action='store_true', help='Running test with 100 simulations (to account for different AE data that should not be summed across the diagonal)')
+
+args = parser.parse_args()
+
 
 for competition in competitions:
-    clubs = set_club_countries_pots(competition)
+    #for db_num in range(1,6):
 
     savePath_main = 'plots/matchupComparison/{}/'.format(competition)
     savePath_extra = 'plots/matchupComparison/{}/extra/'.format(competition)
+    #savePath_main = 'plots/matchupComparison/AE_DB_{}/{}/'.format(db_num, competition)
+    #savePath_extra = 'plots/matchupComparison/AE_DB_{}/{}/extra/'.format(db_num, competition)
 
     if not os.path.exists(savePath_main):
         os.makedirs(savePath_main)
     if not os.path.exists(savePath_extra):
         os.makedirs(savePath_extra)
 
+    data_AE = DataHandler("AE", competition)
+    data_AS = DataHandler("Asolvo", competition)
 
-    data["AE"] = getData(dataPath+"AE/"+competition+"-50k.csv")
-    #data["AE"] = getData(dataPath+"AE/Old_UECL_algo/"+competition+"-50k.csv")
-    data["AS"] = getData(dataPath+"Asolvo/"+competition+"-50k.csv")
-    #data["AE"] = getData(dataPath+"AE/Old_UECL_algo/"+competition+"-50k.csv")
+    data_AE.setDataPath(dataPath+"AE/"+competition+"-50k.csv")
+    data_AS.setDataPath(dataPath+"Asolvo/"+competition+"-50k.csv")
 
 
-    dataSum["AE"] = data["AE"] + data["AE"].T
-    dataSum["AS"] = data["AS"] + data["AS"].T
+    if args.test100:
+        dataSumAE = data_AE.data
+    else:
+        dataSumAE = data_AE.data + data_AE.data.T
+    
+    dataSumAS = data_AS.data + data_AS.data.T
 
     #I just want to plot the two total counts over each other
     fig, (ax1, ax2) = plt.subplots(2, 1, gridspec_kw={'height_ratios': [3, 1]}, figsize=(8, 6))
 
-    AEsplit = splitDiagonalToList(dataSum['AE'])
-    ASsplit = splitDiagonalToList(dataSum['AS'])
+    AEsplit = splitDiagonalToList(dataSumAE)
+    ASsplit = splitDiagonalToList(dataSumAS)
     nbins = 20
     val_of_bins_x1, edges_of_bins_x1, patches_x1 = ax1.hist(AEsplit, bins=nbins, label='AE', alpha=0.4, color='green')
     val_of_bins_x2, edges_of_bins_x2, patches_x2 = ax1.hist(ASsplit, bins=nbins, label='Asolvo',  alpha=0.4, color='blue')
@@ -47,7 +56,6 @@ for competition in competitions:
     ax1.legend()
     
     ratio = np.divide(val_of_bins_x1, val_of_bins_x2)
-    print(ratio)
     bin_centers = 0.5 * (edges_of_bins_x1[1:] + edges_of_bins_x1[:-1])
     ax2.plot(bin_centers, ratio, marker='o', linestyle='-', color='green', alpha=0.4)
     ax2.set_ylabel('ratio AE/Asolvo')
@@ -58,7 +66,7 @@ for competition in competitions:
 
     
     ## absolute difference
-    dataDiff = dataSum["AE"] - dataSum["AS"]
+    dataDiff = dataSumAE - dataSumAS
     dataDiffSplit = splitDiagonalToList(dataDiff)
     plt.hist(dataDiffSplit, bins=30)
     plt.xlabel("difference in # matchups: AE - AS")
@@ -66,39 +74,50 @@ for competition in competitions:
     plt.clf()
 
     ## percent difference
-    dataDiffFractional = dataDiff.astype(np.float64) / dataSum["AE"].astype(np.float64) * 100
+    dataDiffFractional = dataDiff.astype(np.float64) / dataSumAE.astype(np.float64) * 100
     dataDiffFSplit = splitDiagonalToList(dataDiffFractional)
-    counts, bins, params = fit_data(dataDiffFSplit , [-5, 5], 30)
-    plot(bins, params, savePath_main + "percent_difference.png", xlineloc=0., range=[-5, 5], xlabel="percent difference in # matchups: (AE - AS)/AE", ymax=80)
-    #plot(bins, params, outDir + "diffFraction.png", xlineloc=0., range=[-5, 5], xlabel="percent difference in # matchups: (AE new - AE old)/AE new", ymax=80)
+    plt.hist(dataDiffSplit, bins=20)
+    plt.xlabel("percent difference in # matchups: (AE - AS)/AE")
+    plt.savefig(savePath_main + "percent_difference.png")
     plt.clf()
 
-    ## difference per pairing
 
-    ## this is cheating so that the plot looks better
+    # counts, bins, params = fit_data(dataDiffFSplit , [-5, 5], 30)
+    # plot(bins, params, savePath_main + "percent_difference.png", xlineloc=0., range=[-5, 5], xlabel="percent difference in # matchups: (AE - AS)/AE", ymax=80)
+    # plt.clf()
+
+    #############
+    ## Make some plots per-pairing
+    ############
+
+    names = list(data_AE.clubs.keys())
+    
     dataDiffZ = emptyBottomDiagonal(dataDiff)
-    dataDiffFractionalZ = emptyBottomDiagonal(dataDiffFractional)
-    dataSumAEZ = emptyBottomDiagonal(dataSum['AE'])
-    dataSumASZ = emptyBottomDiagonal(dataSum['AS'])
-
-    # dataSumAEZ = dataSum['AE']
-    # dataSumASZ = dataSum['AS']
-
-    names = list(clubs.keys())
-
-    make2DTeamPlot(dataDiffZ, names, "abs(workingData[i, j]) > 400", savePath_main+"difference_per_matchup_2D.png", competition, cbarLabel="AE - AS", clim=[0,500])
+    make2DTeamPlot(dataDiffZ, names, "abs(workingData[i, j]) > 400", savePath_main+"difference_per_matchup_2D.png", competition, cbarLabel="AE - AS", clim=[0,50])
     plt.close()
 
+    dataSumAEZ = emptyBottomDiagonal(dataSumAE)
     make2DTeamPlot(dataSumAEZ, names, "False", savePath_extra+"allData_AE.png", competition, cbarLabel="number of matchups", clim=[np.min( dataSumAEZ[dataSumAEZ !=0] ) , np.max(dataSumAEZ)], fontsize=7)
     plt.close()
 
+    dataSumASZ = emptyBottomDiagonal(dataSumAS)
     make2DTeamPlot(dataSumASZ, names, "False", savePath_extra+"allData_Asolvo.png", competition, cbarLabel="number of matchups", clim=[np.min( dataSumAEZ[dataSumASZ !=0] ) , np.max(dataSumASZ)], fontsize=8)
     plt.close()
-    
+
+    ## check permission matrices
+    ## replace data with 1 to indicate an allowed pairing, 0 to indicate an disallowed pairing
+    permission_AE = np.where( data_AE.data !=0, 1, 0)
+    permission_AS = np.where( data_AS.data !=0, 1, 0)
+
+    difference_permission = permission_AE - permission_AS
+
+    make2DTeamPlot(difference_permission, names, "False", savePath_main+"difference_allowedPairings_2D.png", competition, cbarLabel="AE - AS", clim=[0,1])
+    plt.close()
 
 
     ########################################
     ## do country comparison for UCL only
+    ########################################
     if competition == 'UCL':
 
         country_comp = {}
@@ -107,21 +126,20 @@ for competition in competitions:
 
         ## identify indices in array that have the big countries 
 
-        for club in clubs.keys():
-            if clubs[club]['country'] in big_countries: 
+        for club in data_AE.clubs.keys():
+            if data_AE.clubs[club]['country'] in big_countries: 
                 #big_country_indices[clubs[club]['country']].append( names.index(club) )
-                big_country_indices[names.index(club)] = clubs[club]['country']
-        print(big_country_indices)
+                big_country_indices[names.index(club)] = data_AE.clubs[club]['country']
 
         combinations = ['ENG-ESP', 'ENG-GER', 'ENG-ITA', 'ENG-FRA',
-                                   'ESP-GER', 'ESP-ITA', 'ESP-FRA',
-                                              'GER-ITA', 'GER-FRA',
-                                                         'ITA-FRA']
+                                'ESP-GER', 'ESP-ITA', 'ESP-FRA',
+                                            'GER-ITA', 'GER-FRA',
+                                                        'ITA-FRA']
         
         for combination in combinations:
             country_comp[combination] = []
 
-        
+        dataDiffFractionalZ = emptyBottomDiagonal(dataDiffFractional)
         for i in range(dataDiffFractionalZ.shape[0]):
             for j in range(dataDiffFractionalZ.shape[1]):
                 if i >= j: continue

@@ -10,7 +10,7 @@ import argparse
 import sys
 
 
-np.set_printoptions(threshold=np.inf, linewidth=np.inf)
+init()
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--provider', type=str, help='AE, Asolvo, or Pseudodata')
@@ -48,7 +48,7 @@ for file in os.listdir(filepath):
     if not os.path.exists(savePath_extra):
         os.makedirs(savePath_extra)
 
-    data = getData(inpName, provider == 'Pseudodata' )
+    data = getData(inpName, provider )
 
     dataT = data.T
     dataSum = data + dataT
