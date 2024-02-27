@@ -25,11 +25,8 @@ class DataHandler:
     
     def setDataPath(self, dataPath):
         self.dataPath = dataPath
-        if self.provider == "AE":
-            self.metadataPath = self.dataPath
-        if self.provider == "Asolvo":
-            self.metadataPath = self.dataPath.split('-')[0] + "-teams.csv"
-        print("setting", self.dataPath)
+        self.metadataPath = dataPath
+        print("working with", self.dataPath)
 
         self.getData()
         self.setClubsCountriesPots()
@@ -42,11 +39,8 @@ class DataHandler:
     
         else: #it's from an excel sheet with the names
             df = pd.read_csv(self.dataPath)
-            if self.provider == "Asolvo":
-                data = df.iloc[:, 1:].values
-            elif self.provider == "AE":
-                data = df.iloc[:, 4:].values
-                #data = df.iloc[:, 1:].values
+            data = df.iloc[:, 4:].values
+            #data = df.iloc[:, 1:].values
         
         self.data = data
     
@@ -75,6 +69,3 @@ class DataHandler:
                 pot = row[2]
 
                 self.clubs[club] = { 'country': country, 'pot': int(pot) }
-
-        
-       

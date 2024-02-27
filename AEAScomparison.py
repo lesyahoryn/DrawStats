@@ -36,8 +36,8 @@ for competition in competitions:
         data_AE = DataHandler("AE", competition)
         data_AS = DataHandler("Asolvo", competition)
 
-        data_AE.setDataPath(dataPath+"AE/"+competition+"-100-{}.csv".format(db_num))
-        data_AS.setDataPath(dataPath+"Asolvo/"+competition+"-100.csv")
+        data_AE.setDataPath(dataPath+"AE/100-test/"+competition+"-100-{}.csv".format(db_num))
+        data_AS.setDataPath(dataPath+"Asolvo/100-test/"+competition+"-100.csv")
 
 
         if args.test100:
@@ -63,7 +63,7 @@ for competition in competitions:
         else:
             results.append(0)
 
-        if 0 in results: 
+        if 0 in results: # if any of the above failed
             listAE = list(data_AE.clubs.keys())
             listAS = list(data_AS.clubs.keys())
             width = max(len(word) for word in listAE + listAS)
