@@ -53,6 +53,7 @@ Main output:
   *  `difference_per_matchup_2D.png` shows the absolute difference between AE and Asolvo per pairing. Any large differences are highlighted with red text
   * `difference_allowedPairings_2D.png` shows a comparison of which pairings are/are not allowed in each dataset
   * `teamCheck.png` shows the result of a check between the teams and their order between the two datasets
+  * `teamListWithProblems.txt` will only get produced if one of the checks shown in the previous plot fails. It will be marked with `!!!!!` to highlight the difference.
 
 #### compute_probabilities.py
 Usage `python compute_probabilities.py `
