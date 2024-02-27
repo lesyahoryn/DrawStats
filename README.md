@@ -64,11 +64,3 @@ Main output:
   * `difference_allowedPairings_2D.png` shows a comparison of which pairings are/are not allowed in each dataset
   * `teamCheck.png` shows the result of a check between the teams and their order between the two datasets
   * `teamListWithProblems.txt` will only get produced if one of the checks shown in the previous plot fails. It will be marked with `!!!!!` to highlight the difference.
-
-#### compute_probabilities.py
-
-Usage `python compute_probabilities.py `
-
-Main output:
-  *  `percent_difference_prob-AE.png` and `percent_difference_prob-AS.png` show the percent difference between draw results and computed probability on the population of team pairings.
-  * `2D_percent_difference_prob-AE.png` and `2D_percent_difference_prob-AS.png` shows the percent difference between draw results and computed probability per team pairing.
