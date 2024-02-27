@@ -35,12 +35,14 @@ It will make an output folder called `plots`. Inside of `plots` there is a folde
 The first set of scripts studies if the home/away assignment is consistent with a fair draw. 
 
 #### probability_plots.py
-Usage: `python probability_plots.py --provider [AE, Asolvo, or Pseudodata]` 
+Usage: `python probability_plots.py` 
+  * By default, the script runs over all three competitions and both providers, however you can select the competition(s) and/or provider by adding the flag(s) `--provider [AE, Asolvo]` and `--competition [UCL,UEL,UECL]`. You can provide multiple separated by `,` (e.g. `--competition UCL,UEL`). 
 Main output: 
   * `HA_prob_normalized.png` which shows the number of times team A plays at home, normalized to 100. 
 
 #### binomial_test.py
-Usage: `python probability_plots.py --provider [AE, Asolvo, or Pseudodata]` 
+Usage: `python probability_plots.py` 
+  * By default, the script runs over all three competitions and both providers, however you can select the competition(s) and/or provider by adding the flag(s) `--provider [AE, Asolvo]` and `--competition [UCL,UEL,UECL]`. You can provide multiple separated by `,` (e.g. `--competition UCL,UEL`). 
 Main output: 
   * `pvalues_0to0p1.png` which shows us the number of pairings with pvalue from the binomial test less than 0.05. We expect this number to be about 5% of the total number of pairings.
 
@@ -48,6 +50,7 @@ Main output:
 
 #### ASAEcomparison.py
 Usage `python ASAEcomparison.py` 
+  * By default, the script runs over all three competitions=, however you can select the competition(s) by adding the flag `--competition [UCL,UEL,UECL]`. You can provide multiple separated by `,` (e.g. `--competition UCL,UEL`). 
 Main output:
   *  `percent_difference.png` shows the percent difference between AE and Asolvo dataset per pairing
   *  `difference_per_matchup_2D.png` shows the absolute difference between AE and Asolvo per pairing. Any large differences are highlighted with red text

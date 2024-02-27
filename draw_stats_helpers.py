@@ -84,8 +84,6 @@ def plot(bins, params, savePath, xlineloc=-999, range=[], xlabel="", ymax=-999, 
     plt.xlabel(xlabel)
     plt.legend()
     plt.savefig(savePath)
-    print("mean", params[1])
-    print("sigma", params[2])
 
 
 
