@@ -2,7 +2,7 @@ from draw_stats_helpers import *
 import matplotlib.pyplot as plt
 import os
 import argparse
-from DataHandler import DataHandler 
+from DataHandler import DataHandler
 
 competitions = ['UCL', 'UECL', 'UEL']
 
@@ -25,13 +25,14 @@ for competition in competitions:
 
         #savePath_main = 'plots/matchupComparison/{}/'.format(competition)
         #savePath_extra = 'plots/matchupComparison/{}/extra/'.format(competition)
-        savePath_main = 'plots/matchupComparison/AE_DB_{}/{}/'.format(db_num, competition)
-        savePath_extra = 'plots/matchupComparison/AE_DB_{}/{}/extra/'.format(db_num, competition)
+        savePath = 'plots/{}/'.format(competition)
+        savePath_main = savePath + '{}_'.format('comparison')
+        savePath_extra = savePath + 'extras/AE_Asolvo_Comparison/{}_'.format('comparison')
 
-        if not os.path.exists(savePath_main):
-            os.makedirs(savePath_main)
-        if not os.path.exists(savePath_extra):
-            os.makedirs(savePath_extra)
+        if not os.path.exists(savePath):
+            os.makedirs(savePath)
+        if not os.path.exists(savePath + 'extras/AE_Asolvo_Comparison/'):
+            os.makedirs(savePath + 'extras/AE_Asolvo_Comparison/')
 
         data_AE = DataHandler("AE", competition)
         data_AS = DataHandler("Asolvo", competition)
@@ -64,14 +65,20 @@ for competition in competitions:
             results.append(0)
 
         if 0 in results: # if any of the above failed
-            listAE = list(data_AE.clubs.keys())
-            listAS = list(data_AS.clubs.keys())
-            width = max(len(word) for word in listAE + listAS)
-            for iclub in range(len(listAE)):
-                if listAE[iclub] != listAS[iclub]:
-                    print(RED + "{:<{width}} {:<{width}}".format(listAE[iclub], listAS[iclub], width=width) + RESET)
-                else:
-                    print( "{:<{width}} {:<{width}}".format(listAE[iclub], listAS[iclub], width=width))
+
+            with open(savePath_main+"_teamListWithProblems.txt", "w", encoding='utf-8') as f:
+                listAE = list(data_AE.clubs.keys())
+                listAS = list(data_AS.clubs.keys())
+                width = max(len(word) for word in listAE + listAS)
+
+                for iclub in range(len(listAE)):
+                    txt = "{:<{width}} {:<{width}}".format(listAE[iclub], listAS[iclub], width=width)
+                    if listAE[iclub] != listAS[iclub]:
+                        print(RED + txt + RESET)
+                        f.write(txt + "!!!!!!!! \n")
+                    else:
+                        print(txt)
+                        f.write(txt + "\n")
 
 
         plt.bar( result_strings, results, color="green")

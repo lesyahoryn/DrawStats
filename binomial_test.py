@@ -23,7 +23,7 @@ if provider not in providers:
     print("you can choose from:", providers)
     sys.exit()
 
-filepath = 'Data/' + provider + '/'
+filepath = 'Data/' + provider + '/100-test/'
 
 for file in os.listdir(filepath):
     
@@ -36,14 +36,15 @@ for file in os.listdir(filepath):
     ##set up input/output paths
     inpName = filepath + file
     saveName = inpName.split("/")[-1].strip(".csv")
-    savePath_main = 'plots/HomeAway/{}/{}/'.format(provider, saveName)
-    savePath_extra = 'plots/HomeAway/{}/{}/extra/'.format(provider, saveName)
+    savePath = 'plots/{}/'.format(competition)
+    savePath_main = savePath + '{}_'.format(provider)
+    savePath_extra = savePath + 'extras/HA_binomial/{}_'.format(provider)
     #savePath = 'plots/' + provider + "_oldalgo/" + saveName + "/"
 
-    if not os.path.exists(savePath_main):
-        os.makedirs(savePath_main)
-    if not os.path.exists(savePath_extra):
-        os.makedirs(savePath_extra)
+    if not os.path.exists(savePath):
+        os.makedirs(savePath)
+    if not os.path.exists(savePath + 'extras/HA_binomial/'):
+        os.makedirs(savePath + 'extras/HA_binomial/')
 
     data = DataHandler(provider, competition)
     data.setDataPath(inpName)
