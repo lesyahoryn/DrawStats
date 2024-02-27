@@ -32,25 +32,32 @@ It will make an output folder called `plots`. Inside of `plots` there is a folde
 ## Code details
 
 ### Home/Away Analysis
+
 The first set of scripts studies if the home/away assignment is consistent with a fair draw. 
 
 #### probability_plots.py
+
 Usage: `python probability_plots.py` 
   * By default, the script runs over all three competitions and both providers, however you can select the competition(s) and/or provider by adding the flag(s) `--provider [AE, Asolvo]` and `--competition [UCL,UEL,UECL]`. You can provide multiple separated by `,` (e.g. `--competition UCL,UEL`). 
+
 Main output: 
   * `HA_prob_normalized.png` which shows the number of times team A plays at home, normalized to 100. 
 
 #### binomial_test.py
+
 Usage: `python probability_plots.py` 
   * By default, the script runs over all three competitions and both providers, however you can select the competition(s) and/or provider by adding the flag(s) `--provider [AE, Asolvo]` and `--competition [UCL,UEL,UECL]`. You can provide multiple separated by `,` (e.g. `--competition UCL,UEL`). 
+
 Main output: 
   * `pvalues_0to0p1.png` which shows us the number of pairings with pvalue from the binomial test less than 0.05. We expect this number to be about 5% of the total number of pairings.
 
 ### Team Pairing Analysis
 
 #### ASAEcomparison.py
+
 Usage `python ASAEcomparison.py` 
   * By default, the script runs over all three competitions=, however you can select the competition(s) by adding the flag `--competition [UCL,UEL,UECL]`. You can provide multiple separated by `,` (e.g. `--competition UCL,UEL`). 
+
 Main output:
   *  `percent_difference.png` shows the percent difference between AE and Asolvo dataset per pairing
   *  `difference_per_matchup_2D.png` shows the absolute difference between AE and Asolvo per pairing. Any large differences are highlighted with red text
@@ -59,7 +66,9 @@ Main output:
   * `teamListWithProblems.txt` will only get produced if one of the checks shown in the previous plot fails. It will be marked with `!!!!!` to highlight the difference.
 
 #### compute_probabilities.py
+
 Usage `python compute_probabilities.py `
+
 Main output:
   *  `percent_difference_prob-AE.png` and `percent_difference_prob-AS.png` show the percent difference between draw results and computed probability on the population of team pairings.
   * `2D_percent_difference_prob-AE.png` and `2D_percent_difference_prob-AS.png` shows the percent difference between draw results and computed probability per team pairing.
