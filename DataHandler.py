@@ -14,7 +14,7 @@ class DataHandler:
 
         self.clubs = OrderedDict()
 
-        self.data = np.zeros(self.nteams, self.nteams )
+        self.data = np.zeros(( self.nteams, self.nteams ))
     
     def setProvider(self, provider):
         self.provider = provider
@@ -28,9 +28,11 @@ class DataHandler:
         if self.provider == "AE":
             self.metadataPath = self.dataPath
         if self.provider == "Asolvo":
-            self.metadataPath = self.dataPath #TODO change string
+            self.metadataPath = self.dataPath.split('-')[0] + "-teams.csv"
+        print("setting", self.dataPath)
 
         self.getData()
+        self.setClubsCountriesPots()
 
     ## actually extract data from files
     def getData(self):
@@ -44,7 +46,7 @@ class DataHandler:
                 data = df.iloc[:, 1:].values
             elif self.provider == "AE":
                 data = df.iloc[:, 4:].values
-                data = df.iloc[:, 1:].values
+                #data = df.iloc[:, 1:].values
         
         self.data = data
     
@@ -53,6 +55,7 @@ class DataHandler:
         ## setup pots and teams per pot
         self.npots = 4
         self.nteamsperpot = 9
+
         if self.competition == 'UECL':
             self.npots = 6
             self.nteamsperpot = 6
@@ -60,9 +63,9 @@ class DataHandler:
         self.nteams = self.npots * self.nteamsperpot
     
     ## get club and pot info from metadata from providers
-    def set_club_countries_pots(self):
+    def setClubsCountriesPots(self):
 
-        with open(self.metadataPath, newline='') as csvfile:
+        with open(self.metadataPath, encoding="utf8", newline='') as csvfile:
             reader = csv.reader(csvfile)
             next(reader, None) # skip header
 

@@ -92,7 +92,7 @@ def plot(bins, params, savePath, xlineloc=-999, range=[], xlabel="", ymax=-999, 
 
 
 
-def make2DTeamPlot(workingData, names, redTxtCondition, outPath, competition, redTxtPrec='.0f', cbarLabel="", clim=[], fontsize=12):
+def make2DTeamPlot(workingData, names, redTxtCondition, outPath, nteamsperpot, npots, redTxtPrec='.0f', cbarLabel="", clim=[], fontsize=12):
     ## do 2d array of p values per matchup
     plt.figure(figsize=(20,20))
     if clim != []:
@@ -112,8 +112,6 @@ def make2DTeamPlot(workingData, names, redTxtCondition, outPath, competition, re
     # add team names as x and y ticks
     plt.xticks(np.arange(0,len(names),1), labels=names, fontsize=12, rotation=90)
     plt.yticks(np.arange(0,len(names),1), labels=names, fontsize=12)
-
-    npots, nteamsperpot = getNPots_TeamsPerPot(competition)
 
     for i in range(1, npots):
         plt.axvline(i * nteamsperpot - 0.5, color='black', linestyle='-', linewidth=1)
