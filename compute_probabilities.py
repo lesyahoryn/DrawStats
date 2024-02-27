@@ -3,6 +3,7 @@ import argparse
 import sys
 import os
 from draw_stats_helpers import * 
+from DataHandler import DataHandler
 
 init()
 
@@ -21,11 +22,9 @@ n_simulations = 50 #in thousands, bc of my naming convention
 
 for competition in competitions: 
     dataPath = 'Data/'
-    data = getData('{}/AE/{}-{}k.csv'.format(dataPath, competition, n_simulations))
 
-
-    clubs = set_club_countries_pots(competition)
-    npots, nteamsperpot = getNPots_TeamsPerPot(competition)
+    data = DataHandler("AE", competition)
+    data.setDataPath( '{}/AE/{}-{}k.csv'.format(dataPath, competition, n_simulations)  )
 
 
     savePath_main = 'plots/matchupComparison/{}/'.format(competition)
@@ -37,32 +36,32 @@ for competition in competitions:
         os.makedirs(savePath_extra)
 
     pot_probs = {}
-    probability_matrix = np.zeros(( data.shape[0], data.shape[1] )) # where we will store the output 
+    probability_matrix = np.zeros(( data.nteams, data.nteams )) # where we will store the output 
 
     ## For UCL and UEL, the number of events per square is number of teams per pot x 2 (bc draw two pairs from each pot) x number of simulations
     if competition == "UCL" or competition == "UEL":
-        normFactor = n_simulations * 1000 * nteamsperpot * 2 / 2
+        normFactor = n_simulations * 1000 * data.nteamsperpot * 2 / 2
     
     ## For UECL, draw only one pair per pot 
     if competition == "UECL":
-        normFactor = n_simulations * 1000 * nteamsperpot / 2 
+        normFactor = n_simulations * 1000 * data.nteamsperpot / 2 
     
 
-    for pot1 in range( 1, npots+1 ):
+    for pot1 in range( 1, data.npots+1 ):
 
-        for pot2 in range( 1, npots+1 ):
+        for pot2 in range( 1, data.npots+1 ):
 
             #if pot1 > pot2: continue # don't need to bother filling the bottom of the diagonal
 
 
             ## start and end index of my pot in matrix
-            start1 = (pot1-1) * nteamsperpot
-            end1 =    pot1    * nteamsperpot
-            start2 = (pot2-1) * nteamsperpot
-            end2 =    pot2    * nteamsperpot
+            start1 = (pot1-1) * data.nteamsperpot
+            end1 =    pot1    * data.nteamsperpot
+            start2 = (pot2-1) * data.nteamsperpot
+            end2 =    pot2    * data.nteamsperpot
 
             # grab the data from only the pot i am working with , for now symmetric but we will come back to that
-            sub_matrix = data[start1:end1, start2:end2]
+            sub_matrix = data.data[start1:end1, start2:end2]
 
 
             ##replace all nonzero elements with 1 because I want to be computing the probability, not just taking what is there
@@ -80,9 +79,9 @@ for competition in competitions:
             print(np.sum(col_sums))
 
             ## normalize the sums to the fact that we should have nteams * nteams total 
-            row_sums = nteamsperpot*nteamsperpot / np.sum(row_sums) * row_sums
-            col_sums = nteamsperpot*nteamsperpot / np.sum(col_sums) * col_sums
-            sub_matrix = nteamsperpot*nteamsperpot / np.sum(sub_matrix) * sub_matrix ## move this up and remove row/col scaling
+            row_sums = data.nteamsperpot*data.nteamsperpot / np.sum(row_sums) * row_sums
+            col_sums = data.nteamsperpot*data.nteamsperpot / np.sum(col_sums) * col_sums
+            sub_matrix = data.nteamsperpot*data.nteamsperpot / np.sum(sub_matrix) * sub_matrix ## move this up and remove row/col scaling
 
             print(row_sums)
             print(col_sums)
@@ -114,12 +113,15 @@ for competition in competitions:
 
     ## now let's compare our draw providers with the computed probabilities 
     
-    providers = ['prob', 'AE', 'AS']
+    providers = ['AE', 'AS']
 
     all_data = {}
     all_data['prob'] = probability_matrix
-    all_data['AE']= getData('{}/AE/{}-{}k.csv'.format(dataPath, competition, n_simulations))
-    all_data['AS']= getData('{}/Asolvo/{}-{}k.csv'.format(dataPath, competition, n_simulations))
+    all_data['AE']= DataHandler('AE', competition)
+    all_data['AE'].setDataPath('{}/AE/{}-{}k.csv'.format(dataPath, competition, n_simulations))
+    all_data['AS']= DataHandler('Asolvo', competition)
+    all_data['AS'].setDataPath('{}/Asolvo/{}-{}k.csv'.format(dataPath, competition, n_simulations))
+    
 
     #all_data['AE'] = all_data['AE'] + all_data['AE'].T
     #all_data['AS'] = all_data['AS'] + all_data['AS'].T
@@ -127,16 +129,23 @@ for competition in competitions:
 
 
     for prov in providers:
-        nz = emptyBottomDiagonal(all_data[prov])
-        nz=all_data[prov]
-        make2DTeamPlot(nz, list(clubs.keys()), "False", savePath_extra+"2D_normalized_{}.png".format(prov), competition, cbarLabel="probability", clim=[np.min( nz[nz !=0] ) , np.max(nz)], fontsize=8)
+        nz = emptyBottomDiagonal(all_data[prov].data)
+        nz=all_data[prov].data
+        make2DTeamPlot(nz, list(all_data[prov].clubs.keys()), "False", savePath_extra+"2D_normalized_{}.png".format(prov), all_data[prov].npots, all_data[prov].nteamsperpot, cbarLabel="probability", clim=[np.min( nz[nz !=0] ) , np.max(nz)], fontsize=8)
         plt.close()
-        np.savetxt(f'{savePath_extra}/data_{prov}.csv', all_data[prov], delimiter=',', fmt='%d')
+        np.savetxt(f'{savePath_extra}/data_{prov}.csv', all_data[prov].data, delimiter=',', fmt='%d')
+    
+    # do the same but for the probability matrix 
+    nz = emptyBottomDiagonal(all_data['prob'])
+    nz = all_data['prob']
+    make2DTeamPlot(nz, list(all_data['AE'].clubs.keys()), "False", savePath_extra+"2D_normalized_{}.png".format(prov), all_data['AE'].npots, all_data['AE'].nteamsperpot, cbarLabel="probability", clim=[np.min( nz[nz !=0] ) , np.max(nz)], fontsize=8)
+    plt.close()
+    np.savetxt(f'{savePath_extra}/data_prob.csv', all_data['prob'].data, delimiter=',', fmt='%d')
 
     for prov in ['AE', 'AS']:
 
         ## absolute difference
-        diff = all_data['prob'] - all_data[prov]
+        diff = all_data['prob'] - all_data[prov].data
         diffSplit = splitDiagonalToList(diff)
         diffSplitDiag = emptyBottomDiagonal(diff)
         diffSplitDiag = diff
@@ -147,11 +156,11 @@ for competition in competitions:
         plt.savefig(savePath_extra + "raw_difference_prob-{}.png".format(prov))
         plt.close()
 
-        make2DTeamPlot(diffSplitDiag, list(clubs.keys()), "False", savePath_extra+"2D_raw_difference_prob-{}.png".format(prov), competition, cbarLabel="difference", clim=[ 0 , np.max(abs(diffSplitDiag))], fontsize=8, redTxtPrec='0.2f')
+        make2DTeamPlot(diffSplitDiag, list(all_data[prov].clubs.keys()), "False", savePath_extra+"2D_raw_difference_prob-{}.png".format(prov), all_data[prov].npots, all_data[prov].nteamsperpot, cbarLabel="difference", clim=[ 0 , np.max(abs(diffSplitDiag))], fontsize=8, redTxtPrec='0.2f')
         plt.close()
 
         ## percent difference 
-        pctDiff = (all_data['prob'] - all_data[prov]) * 100 / all_data['prob']
+        pctDiff = (all_data['prob'] - all_data[prov].data) * 100 / all_data['prob']
         pctDiffSplit = splitDiagonalToList(pctDiff)
         pctDiffSplitDiag = emptyBottomDiagonal(pctDiff)
         pctDiffSplitDiag = pctDiff
@@ -162,9 +171,9 @@ for competition in competitions:
         plt.savefig(savePath_main + "percent_difference_prob-{}.png".format(prov))
         plt.close()
 
-        make2DTeamPlot(pctDiffSplitDiag, list(clubs.keys()), "abs(workingData[i][j]) > 5", savePath_main+"2D_percent_difference_prob-{}.png".format(prov), competition, cbarLabel="percent difference", clim=[ 0 , 20], fontsize=8, redTxtPrec='0.2f')
+        make2DTeamPlot(pctDiffSplitDiag, list(all_data[prov].clubs.keys()), "abs(workingData[i][j]) > 5", savePath_main+"2D_percent_difference_prob-{}.png".format(prov),  all_data[prov].npots, all_data[prov].nteamsperpot, cbarLabel="percent difference", clim=[ 0 , 20], fontsize=8, redTxtPrec='0.2f')
         plt.close()
-        make2DTeamPlot(pctDiffSplitDiag, list(clubs.keys()), "abs(workingData[i][j]) > 5", savePath_extra+"2D_percent_difference_prob-{}_dynamicAxis.png".format(prov), competition, cbarLabel="percent difference", clim=[ 0 , np.max(pctDiffSplitDiag)], fontsize=8, redTxtPrec='0.2f')
+        make2DTeamPlot(pctDiffSplitDiag, list(all_data[prov].clubs.keys()), "abs(workingData[i][j]) > 5", savePath_extra+"2D_percent_difference_prob-{}_dynamicAxis.png".format(prov),  all_data[prov].npots, all_data[prov].nteamsperpot, cbarLabel="percent difference", clim=[ 0 , np.max(pctDiffSplitDiag)], fontsize=8, redTxtPrec='0.2f')
         plt.close()
 
 

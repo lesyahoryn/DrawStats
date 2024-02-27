@@ -1,11 +1,10 @@
 import matplotlib.pyplot as plt
 from scipy.stats import binomtest
-from scipy.stats import norm
-from scipy.optimize import curve_fit
 import pandas as pd
 import numpy as np
 import os
 from draw_stats_helpers import *
+from DataHandler import DataHandler
 import argparse
 import sys
 
@@ -34,8 +33,6 @@ for file in os.listdir(filepath):
     if competition not in ['UCL', 'UEL', 'UECL']: #one of the pseudodata samples
         competition = "UECL"
 
-    clubs = set_club_countries_pots(competition)
-
     ##set up input/output paths
     inpName = filepath + file
     saveName = inpName.split("/")[-1].strip(".csv")
@@ -48,17 +45,17 @@ for file in os.listdir(filepath):
     if not os.path.exists(savePath_extra):
         os.makedirs(savePath_extra)
 
-    data = getData(inpName, provider )
+    data = DataHandler(provider, competition)
+    data.setDataPath(inpName)
 
-    dataT = data.T
-    dataSum = data + dataT
+    dataSum = data.data + data.data.T
 
-    indexLabels=list(clubs.keys())
+    indexLabels=list(data.clubs.keys())
 
     ## normalize data and dataT to parallelize the two probabilities
     normFactor = 1
-    dataNorm = np.round(data / dataSum * normFactor)
-    dataTNorm = np.round(dataT / dataSum * normFactor)
+    dataNorm = np.round(data.data / dataSum * normFactor)
+    dataTNorm = np.round(data.data.T / dataSum * normFactor)
     dataNormSum = dataNorm + dataTNorm  
 
     
@@ -68,16 +65,15 @@ for file in os.listdir(filepath):
     #############
 
     #output data structure
-    workingData = data
+    workingData = data.data
     workingSum = dataSum
-    nRows, nCols = workingData.shape
-    pvalues = np.zeros((nRows, nCols))
-    statistics = np.zeros((nRows, nCols))
+    pvalues = np.zeros((data.nteams, data.nteams))
+    statistics = np.zeros((data.nteams, data.nteams))
     p = 0.5
     cl = 0.05
 
-    for i in range(nRows):
-        for j in range(nCols):
+    for i in range(data.nteams):
+        for j in range(data.nteams):
             if i >= j: continue #only work with cells above diagonal, also skip diagonal bc who cares
             if np.isnan( workingData[i][j] ) and np.isnan( workingData[j][i] ): continue #skip pairings that are illegal
             if workingData[i][j] == 0 and workingData[j][i] == 0 : continue #skip pairings that are illegal
@@ -123,18 +119,11 @@ for file in os.listdir(filepath):
 
     ##count low p values per pot, and sum p values per team  
     
-    pvalues_perteam = [0]*len(clubs.keys())
-    low_pvalues_perteam = [0]*len(clubs.keys())
-
-    npots, nteamsperpot = getNPots_TeamsPerPot(competition)
+    pvalues_perteam = [0]*data.nteams
+    low_pvalues_perteam = [0]*data.nteams
     
-    # pvalues_perpot = {}
-    # for pot in range ( 1, npots+1 ):
-    #     print("\n pot", pot)
-    #     pvalues_perpot[pot] = []
-
-    for i in range(nRows):
-        for j in range(nCols):
+    for i in range(data.nteams):
+        for j in range(data.nteams):
             if i >= j: continue
             if pvalues[i][j] !=0 : 
                 
@@ -162,7 +151,7 @@ for file in os.listdir(filepath):
 
 
     ## do 2d array of p values per matchup
-    make2DTeamPlot(pvalues, indexLabels, "workingData[i, j] < 0.05", savePath_extra+"pvalue_per_matchup_2D.png", competition, redTxtPrec='0.2f', cbarLabel="p value")
+    make2DTeamPlot(pvalues, indexLabels, "workingData[i, j] < 0.05", savePath_extra+"pvalue_per_matchup_2D.png", data.npots, data.nteamsperpot, redTxtPrec='0.2f', cbarLabel="p value")
     plt.close()
 
 
