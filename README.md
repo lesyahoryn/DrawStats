@@ -19,12 +19,15 @@ All scripts process data from all three competitions by default
 
 5. Activate the environment by running `conda activate DrawStats`. You will need to do this every time you open a new terminal (as in step 2). Where it previously said `(base)` should now say `(DrawStats)`. 
 
-6. Run any of the scripts in the git repo. 
+6. Before running your scripts, you must edit `data_config.py` with the location of the files for each competition for each provider. The path can be anywhere accessible to your script, but I have been making a `Data` folder in my working directory. 
+
+7. Run any of the scripts in the git repo. 
 
 If you want edit code in a nice environment, I recommend [installing VSCode](https://code.visualstudio.com/download)
 
 ## Run Everything
-To run all the scripts for each provider, simply run `runAll.bat` in your conda terminal.
+
+To run all the scripts for each provider, simply run `runAll.bat` in your conda terminal. Be sure to edit `data_config.py` with the location of your input datasets before starting.
 
 It will make an output folder called `plots`. Inside of `plots` there is a folder for each competition, which contains the main results, as well as a folder called `extras` that contains auxiliary plots from each script that might be helpful if you see an issue in one of the main results, or are curious about things like country/pot correlations.
 
