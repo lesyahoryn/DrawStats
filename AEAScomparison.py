@@ -4,6 +4,7 @@ import os
 import argparse
 from DataHandler import DataHandler
 import data_config
+import sys
 
 competitions = ['UCL', 'UECL', 'UEL']
 
@@ -16,13 +17,8 @@ dataPath = 'Data/'
 init()
 
 parser = argparse.ArgumentParser()
-
-
-args = parser.parse_args()
-
-parser = argparse.ArgumentParser()
-parser.add_argument('--competition', type=str, help='choices: UCL, UECL, UEL, all. All runs all 3, otherwise provide comma separated list. Default = all', default='all' )
-parser.add_argument('--test100', action='store_true', help='Running test with 100 simulations (to account for different AE data that should not be summed across the diagonal)')
+parser.add_argument('--competition', type=str,            help='choices: UCL, UECL, UEL, all. All runs all 3, otherwise provide comma separated list. Default = all', default='all' )
+parser.add_argument('--test100',     action='store_true', help='Running test with 100 simulations (to account for different AE data that should not be summed across the diagonal)')
 
 args = parser.parse_args()
 
@@ -44,7 +40,7 @@ for competition in competitions:
 
     #savePath_main = 'plots/matchupComparison/{}/'.format(competition)
     #savePath_extra = 'plots/matchupComparison/{}/extra/'.format(competition)
-    savePath = 'plots/{}/'.format(competition)
+    savePath = '{}/{}/'.format(data_config.plotDir, competition)
     savePath_main = savePath + '{}_'.format('comparison')
     savePath_extra = savePath + 'extras/AE_Asolvo_Comparison/{}_'.format('comparison')
 

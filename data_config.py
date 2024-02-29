@@ -22,3 +22,4 @@ data_config['Asolvo'] = {
 
 competitions = ['UCL', 'UEL', 'UECL']
 providers = ['AE', 'Asolvo']
+plotDir = 'plots/'

@@ -47,7 +47,7 @@ for provider in providers:
 
         print("TESTING", competition, provider)
 
-        savePath = 'plots/{}/'.format(competition)
+        savePath = '{}/{}/'.format(data_config.plotDir, competition)
         savePath_main = savePath + '{}_'.format(provider)
         savePath_extra = savePath + 'extras/HA_probability/{}_'.format(provider)
         #savePath = 'plots/' + provider + "_oldalgo/" + saveName + "/"

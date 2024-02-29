@@ -48,7 +48,7 @@ for provider in providers:
     for competition in competitions:
 
         ##set up output paths
-        savePath = 'plots/{}/'.format(competition)
+        savePath = '{}/{}/'.format(data_config.plotDir, competition)
         savePath_main = savePath + '{}_'.format(provider)
         savePath_extra = savePath + 'extras/HA_binomial/{}_'.format(provider)
         #savePath = 'plots/' + provider + "_oldalgo/" + saveName + "/"
